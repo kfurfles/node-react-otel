@@ -1,0 +1,10 @@
+export const DATABASE_URL = process.env.DATABASE_URL;
+export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+export const GOOGLE_PROJECT_ID = process.env.GOOGLE_PROJECT_ID;
+export const GOOGLE_AUTH_URI = process.env.GOOGLE_AUTH_URI;
+export const GOOGLE_TOKEN_URI = process.env.GOOGLE_TOKEN_URI;
+export const GOOGLE_PROVIDER_CERT = process.env.GOOGLE_PROVIDER_CERT;
+export const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
+export const GOOGLE_REDIRECT = process.env.GOOGLE_REDIRECT;
+export const GOOGLE_ORIGINS = process.env.GOOGLE_ORIGINS;
+export const PORT = process.env.PORT;

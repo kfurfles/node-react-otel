@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// model Team {
+//   id             Int          @id @default(autoincrement())
+//   public_id      String       @default(uuid())
+//   name           String       @db.VarChar(255)
+//   users          TeamsOnUsers[] 
+// }
+
+model User {
+  id             String       @id @default(uuid())
+  name           String       @db.VarChar(255)
+  lastname       String       @db.VarChar(255)
+  picture        String?      @db.VarChar(255)
+  account        Account? 
+}
+
+model Account {
+  id             String       @id @default(uuid())
+  email          String       @db.VarChar(255) @unique
+  confirmed      Boolean      @db.Boolean() @default(false)
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  password       String?      @db.VarChar(255)
+  google_id      String?      @db.VarChar(255)
+  facebook_id    String?      @db.VarChar(255)
+}
+
+// model TeamsOnUsers {
+//   team          Team          @relation(fields: [teamId], references: [id])
+//   teamId        Int
+//   user          User          @relation(fields: [userId], references: [id])
+//   userId        Int
+
+//   @@id([teamId, userId])
+// }
