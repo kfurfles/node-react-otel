@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Attach by Process ID",
+        "processId": "${command:PickProcess}",
+        "request": "attach",
+        "port": 9229,
+        "restart": true,
+        "sourceMaps": true,
+        "skipFiles": [
+          "<node_internals>/**"
+        ],
+        "type": "node"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug Nest Framework",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": [
+          "run",
+          "start:debug",
+          "--",
+          "--inspect-brk"
+        ],
+        "autoAttachChildProcesses": true,
+        "restart": true,
+        "sourceMaps": true,
+        "stopOnEntry": false,
+        "console": "integratedTerminal",
+      }
+    ]
+}

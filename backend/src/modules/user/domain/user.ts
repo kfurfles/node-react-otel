@@ -31,6 +31,7 @@ export class User extends Entity<UserProps> {
         .matches(regex, 'O sobrenome deve conter apenas letras e números'),
       picture: Yup.string()
         .url('O campo picture deve ser uma URL válida.')
+        .nullable()
         .optional(),
     });
 

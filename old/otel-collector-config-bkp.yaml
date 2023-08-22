@@ -1,0 +1,57 @@
+receivers:
+  jaeger:
+    protocols:
+      thrift_http:
+        endpoint: "0.0.0.0:14278" # port opened on the otel collector
+
+  otlp:
+    protocols:
+      grpc:
+      http:
+        include_metadata: true
+        cors:
+          allowed_origins:
+            - http://localhost:3000/
+            - http://localhost:3000
+            - http://localhost:4000
+          allowed_headers:
+            - "*"
+          max_age: 7200
+
+  otlp/spanmetrics:
+    protocols:
+      grpc:
+        endpoint: "localhost:65535"
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:9090"
+
+  logging:
+
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]

@@ -3,9 +3,12 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PORT } from './infra/env';
+import { sdk } from './infra/opentelemetry';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+  await sdk.start();
+  // await meter.start();
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: [
@@ -31,6 +34,7 @@ async function bootstrap() {
 
   app.use(helmet());
   app.useGlobalPipes(new ValidationPipe());
+  app.enableShutdownHooks();
 
   await app.listen(PORT, () => {
     console.log(`Server running on port: ${PORT}`);

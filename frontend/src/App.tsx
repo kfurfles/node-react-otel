@@ -85,38 +85,33 @@ function createUserWithGoogle(params: IGoogleResponse) {
 });
 }
 
+const handler = () => {
+  fetch("http://localhost:4000/", {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+      "cache-control": "no-cache",
+      "pragma": "no-cache",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Google Chrome\";v=\"115\", \"Chromium\";v=\"115\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"macOS\"",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin"
+    },
+    "referrer": "http://localhost:4000/api",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "body": null,
+    "method": "GET",
+    "mode": "cors",
+    "credentials": "include"
+  });
+}
+
 function App() {
 
   const onSuccess = async (data: IGoogleResponse) => {
     return createUserWithGoogle(data)
-    // const { credential } = data
-    // const {
-    //   given_name: name,
-    //   family_name: lastname,
-    //   email,
-    //   picture,
-    //   sub,
-    // } = parseJwt<IGoogleToken>(credential)
-
-    // const user: IUser = {
-    //   name,
-    //   lastname,
-    //   email,
-    //   iss: 'google',
-    //   picture,
-    //   id: sub
-    // }
-
-    // new jose.SignJWT({
-
-    // })
-    // const newJWt = new jose.SignJWT({
-    //   ...user
-    // })
-    // newJWt.sign(JWT_REGISTER_TOKEN)
-    //   .then(encoded => {
-    //     console.log(encoded)
-    //   })
   };
   const responseFacebook = (response: IFacebookResponse) => {
     const { name: fullname, email, picture: { data: { url: picture } }, id, userID } = response
@@ -143,7 +138,7 @@ function App() {
         fields="name,email,picture"
         callback={responseFacebook}
       />
-      <button></button>
+      <button onClick={() => handler()}>Send Event</button>
     </>
   )
 }
