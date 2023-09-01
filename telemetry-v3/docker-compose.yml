@@ -4,7 +4,6 @@ services:
     restart: unless-stopped
     container_name: data-prepper
     image: opensearchproject/data-prepper:2
-    command: ['echo "ssl: false" > data-prepper-config.yaml']
     volumes:
       - ./trace_analytics_no_ssl_2x.yml:/usr/share/data-prepper/pipelines/pipelines.yaml
       - ./data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
