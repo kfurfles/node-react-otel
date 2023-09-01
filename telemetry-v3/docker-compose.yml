@@ -47,13 +47,13 @@ services:
     depends_on:
       - otel-collector
 
-  jaeger-hot-rod:
-    image: jaegertracing/example-hotrod:1.41.0
-    command: [ "all" ]
-    environment:
-      - JAEGER_AGENT_HOST=jaeger-agent
-      - JAEGER_AGENT_PORT=6831
-    ports:
-      - "8080-8083:8080-8083"
-    depends_on:
-      - jaeger-agent
+  # jaeger-hot-rod:
+  #   image: jaegertracing/example-hotrod:1.41.0
+  #   command: [ "all" ]
+  #   environment:
+  #     - JAEGER_AGENT_HOST=jaeger-agent
+  #     - JAEGER_AGENT_PORT=6831
+  #   ports:
+  #     - "8080-8083:8080-8083"
+  #   depends_on:
+  #     - jaeger-agent
