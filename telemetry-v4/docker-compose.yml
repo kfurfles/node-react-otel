@@ -19,8 +19,6 @@ services:
     image: jaegertracing/all-in-one
     container_name: jaeger
     command:
-      - "--memory.max-traces"
-      - "10000"
       - "--query.base-path"
       - "/jaeger/ui"
       - "--prometheus.server-url"
@@ -42,6 +40,22 @@ services:
       - COLLECTOR_OTLP_ENABLED=true
       - METRICS_STORAGE_TYPE=prometheus
     logging: *logging
+
+  data-prepper:
+    restart: unless-stopped
+    container_name: data-prepper
+    image: opensearchproject/data-prepper:2
+    volumes:
+      - ./trace_analytics_no_ssl_2x.yml:/usr/share/data-prepper/pipelines/pipelines.yaml
+      - ./data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
+    ports:
+      - "21890:21890"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:21890/health"]
+      start_period: 10s
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   # Grafana
   grafana:
@@ -79,6 +93,7 @@ services:
       - "8888"          # metrics endpoint
     depends_on:
       - jaeger
+      - data-prepper
     logging: *logging
   
   # Prometheus
@@ -168,14 +183,14 @@ services:
     volumes: 
       - ./docker/postgres:/var/lib/postgresql/data
 
-  jaeger-hot-rod:
-    image: jaegertracing/example-hotrod:1.41.0
-    command: [ "all" ]
-    environment:
-      - JAEGER_AGENT_HOST=jaeger
-      - JAEGER_AGENT_PORT=6831
-    ports:
-      - "8090:8080"
-      - "8091:8081"
-      - "8092:8082"
-      - "8093:8083"
+  # jaeger-hot-rod:
+  #   image: jaegertracing/example-hotrod:1.41.0
+  #   command: [ "all" ]
+  #   environment:
+  #     - JAEGER_AGENT_HOST=jaeger
+  #     - JAEGER_AGENT_PORT=6831
+  #   ports:
+  #     - "8090:8080"
+  #     - "8091:8081"
+  #     - "8092:8082"
+  #     - "8093:8083"
