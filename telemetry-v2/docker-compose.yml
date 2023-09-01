@@ -31,8 +31,8 @@ services:
           memory: 300M
     restart: unless-stopped
     ports:
-      - "16686:16686"                    # Jaeger UI
-      - "4317:4317"                           # OTLP gRPC default port
+      - "16686"                    # Jaeger UI
+      - "4317"                           # OTLP gRPC default port
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - METRICS_STORAGE_TYPE=prometheus
@@ -55,23 +55,28 @@ services:
 
   # OpenTelemetry Collector
   otelcol:
-    image: otel/opentelemetry-collector-contrib:0.82.0
+    image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-col
     deploy:
       resources:
         limits:
           memory: 125M
     restart: unless-stopped
-    command: [ "--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-observability.yml", "--config=/etc/otelcol-config-extras.yml" ]
+    command: ["--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-observability.yml", "--config=/etc/otelcol-config-extras.yml" ]
     volumes:
+      - ./service-account-key.json:/etc/otel/key.json
       - ./otelcollector/otelcol-config.yml:/etc/otelcol-config.yml
       - ./otelcollector/otelcol-observability.yml:/etc/otelcol-observability.yml
       - ./otelcollector/otelcol-config-extras.yml:/etc/otelcol-config-extras.yml
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/etc/otel/key.json
     ports:
       - "4317"          # OTLP over gRPC receiver
       - "4318:4318"     # OTLP over HTTP receiver
       - "9464"          # Prometheus exporter
       - "8888"          # metrics endpoint
+      - "55679:55679" # zpages extension
+
     depends_on:
       - jaeger
     logging: *logging
@@ -139,14 +144,14 @@ services:
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
     depends_on:
       - zoo
+
   # Kafka Cliente 
-  
   redpanda-console:
     image: docker.redpanda.com/redpandadata/console:latest
     environment:
       - KAFKA_BROKERS=kafka:29092
     ports:
-      - "8080:8080"
+      - "8070:8080"
     depends_on:
       - kafka
 
@@ -164,13 +169,11 @@ services:
       - ./docker/postgres:/var/lib/postgresql/data
 
   jaeger-hot-rod:
-    image: jaegertracing/example-hotrod:1.41.0
+    image: jaegertracing/example-hotrod:latest
     command: [ "all" ]
     environment:
-      - JAEGER_AGENT_HOST=jaeger
-      - JAEGER_AGENT_PORT=6831
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14268/api/traces
     ports:
-      - "8090:8080"
-      - "8091:8081"
-      - "8092:8082"
-      - "8093:8083"
+      - "8080-8083:8080-8083"
+    depends_on:
+      - otelcol

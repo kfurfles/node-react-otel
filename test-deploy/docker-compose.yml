@@ -1,0 +1,6 @@
+version: '3.8'
+services:
+  docker-httpd:
+    image: "nurulramadhona/httpd:eb"
+    ports:
+      - "80:80"

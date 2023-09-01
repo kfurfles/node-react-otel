@@ -1,0 +1,295 @@
+# version: "3"
+
+# services:
+#   kibana:
+#     networks:
+#       - elastic-jaeger
+#     depends_on:
+#       - elasticsearch
+#     container_name: kibana
+#     image: docker.elastic.co/kibana/kibana:7.17.9
+#     volumes:
+#       - kdata:/usr/share/kibana/data
+#     ports:
+#      - 5601:5601
+#     restart: always
+#     environment:
+#       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+
+#   elasticsearch:
+#     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+#     networks:
+#       - elastic-jaeger
+#     ports:
+#       - "127.0.0.1:9200:9200"
+#       - "127.0.0.1:9300:9300"
+#     restart: on-failure
+#     environment:
+#       - cluster.name=jaeger-cluster
+#       - discovery.type=single-node
+#       - http.host=0.0.0.0
+#       - transport.host=127.0.0.1
+#       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+#       - xpack.security.enabled=false
+#     volumes:
+#       - esdata:/usr/share/elasticsearch/data
+
+#   otelcol:
+#     container_name: otel-collector
+#     image: otel/opentelemetry-collector:0.64.1
+#     command: [ "--config=/etc/otel-collector-config.yml" ]
+#     deploy:
+#       resources:
+#         limits:
+#           memory: 125M
+#     restart: unless-stopped
+#     volumes:
+#       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+#     ports:
+#       - "14250:14250"
+#     depends_on:
+#       - jaeger-collector
+#     networks:
+#       - elastic-jaeger
+
+#   jaeger-agent:
+#     container_name: jaeger-agent
+#     image: jaegertracing/jaeger-agent:latest
+#     command: [ "--reporter.grpc.host-port=otel-collector:14250" ]
+#     ports:
+#       - "5775:5775/udp"
+#       - "6831:6831/udp"
+#       - "6832:6832/udp"
+#       - "5778:5778/tcp"
+#     networks:
+#       - elastic-jaeger
+#     restart: on-failure
+#     environment:
+#       - SPAN_STORAGE_TYPE=elasticsearch
+#     depends_on:
+#       - jaeger-collector
+
+#   jaeger-collector:
+#     image: jaegertracing/jaeger-collector
+#     ports:
+#       - "14269:14269"
+#       - "14268:14268"
+#       - "14267:14267"
+#       - "9411:9411"
+#     networks:
+#       - elastic-jaeger
+#     restart: on-failure
+#     environment:
+#       - SPAN_STORAGE_TYPE=elasticsearch
+#     command: [
+#       "--es.server-urls=http://elasticsearch:9200",
+#       "--es.num-shards=1",
+#       "--es.num-replicas=0",
+#       "--log-level=error"
+#     ]
+#     depends_on:
+#      - elasticsearch
+
+#   jaeger-query:
+#     image: jaegertracing/jaeger-query
+#     environment:
+#       - SPAN_STORAGE_TYPE=elasticsearch
+#       - no_proxy=localhost
+#     volumes:
+#       - ./jaeger-ui.json:/usr/share/jaeger-query/jaeger-ui.json:ro
+#     ports:
+#       - "16686:16686"
+#       - "16687:16687"
+#     networks:
+#       - elastic-jaeger
+#     restart: on-failure
+#     command: [
+#       "--es.server-urls=http://elasticsearch:9200",
+#       "--span-storage.type=elasticsearch",
+#       "--log-level=debug",
+#       "--query.ui-config=/usr/share/jaeger-query/jaeger-ui.json"
+#     ]
+#     depends_on:
+#       - jaeger-agent
+
+#   hotrod:
+#     image: jaegertracing/example-hotrod:1.41.0
+#     ports: 
+#       - "8080:8080"
+#     command: ["all"]
+#     environment:
+#       - JAEGER_AGENT_HOST=jaeger-agent
+#       - JAEGER_AGENT_PORT=6831
+#     networks:
+#       - elastic-jaeger
+#     depends_on:
+#       - jaeger-agent
+
+# volumes:
+#   esdata:
+#     driver: local
+#   kdata:
+#     driver: local
+
+# networks:
+#   elastic-jaeger:
+#     driver: bridge
+
+
+# version: "3.7"
+# services:
+#   data-prepper:
+#     restart: unless-stopped
+#     container_name: data-prepper
+#     image: opensearchproject/data-prepper:2
+#     volumes:
+#       - ./trace_analytics_no_ssl.yml:/usr/share/data-prepper/pipelines/pipelines.yaml
+#       - ./data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
+#     ports:
+#       - "21890:21890"
+#     networks:
+#       - my_network
+#     depends_on:
+#       - "elasticsearch"
+  
+#   otel-collector:
+#     container_name: otel-collector
+#     image: otel/opentelemetry-collector:0.64.1
+#     command: [ "--config=/etc/otel-collector-config.yml" ]
+#     working_dir: "/project"
+#     volumes:
+#       - ${PWD}/:/project
+#       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+#       - ../demo/demo-data-prepper.crt:/etc/demo-data-prepper.crt
+#     ports:
+#       - "14250:14250"
+#     depends_on:
+#       - data-prepper
+#     networks:
+#       - my_network
+      
+#   jaeger-agent:
+#     container_name: jaeger-agent
+#     image: jaegertracing/jaeger-agent:latest
+#     command: [ "--reporter.grpc.host-port=otel-collector:14250" ]
+#     ports:
+#       - "5775:5775/udp"
+#       - "6831:6831/udp"
+#       - "6832:6832/udp"
+#       - "5778:5778/tcp"
+#     networks:
+#       - my_network
+  
+#   jaeger-hot-rod:
+#     image: jaegertracing/example-hotrod:1.41.0
+#     command: [ "all" ]
+#     environment:
+#       - JAEGER_AGENT_HOST=jaeger-agent
+#       - JAEGER_AGENT_PORT=6831
+#     ports:
+#       - "8080-8083:8080-8083"
+#     depends_on:
+#       - jaeger-agent
+#     networks:
+#       - my_network
+
+#   elasticsearch:
+#     container_name: node-0.example.com
+#     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+#     networks:
+#       - my_network
+#     ports:
+#       - "127.0.0.1:9200:9200"
+#       - "127.0.0.1:9300:9300"
+#       - 9600:9600 # required for Performance Analyzer
+#     restart: on-failure
+#     environment:
+#       - cluster.name=jaeger-cluster
+#       - discovery.type=single-node
+#       - http.host=0.0.0.0
+#       - transport.host=127.0.0.1
+#       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+#       - xpack.security.enabled=false
+#     volumes:
+#       - esdata:/usr/share/elasticsearch/data
+  
+#   dashboards:
+#     image: opensearchproject/opensearch-dashboards:2
+#     container_name: opensearch-dashboards
+#     ports:
+#       - 5601:5601
+#     expose:
+#       - "5601"
+#     environment:
+#       OPENSEARCH_HOSTS: '["https://node-0.example.com:9200"]'
+#     depends_on:
+#       - elasticsearch
+#     networks:
+#       - my_network
+
+# networks:
+#   my_network:
+
+# volumes:
+#   esdata:
+#     driver: local
+
+version: "2"
+services:
+
+  frontend:
+    build:
+      context: ./otel-js-frontend
+    depends_on:
+      - opentelemetry-collector
+
+  backend:
+    build:
+      context: ./otel-python-backend
+    depends_on:
+      - opentelemetry-collector
+
+  pinger:
+    build:
+      context: ./elastic-pinger
+    environment:
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+    depends_on:
+      - apm-server
+
+  opentelemetry-collector:
+    image: otel/opentelemetry-collector-contrib:0.9.0
+    command: ["--config=/conf/collector-config.yml", "--log-level=DEBUG"]
+    volumes:
+      - ./collector-config.yml:/conf/collector-config.yml
+    depends_on:
+      - apm-server
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.9.1
+    command:
+      - -e
+      - --E
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+      - 9600:9600
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.1
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch

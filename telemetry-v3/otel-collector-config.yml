@@ -2,6 +2,20 @@ receivers:
   jaeger:
     protocols:
       grpc:
+      thrift_http:
+        endpoint: "0.0.0.0:14278"
+
+  otlp:
+    protocols:
+      http:
+        include_metadata: true
+        cors:
+          allowed_origins:
+            - http://localhost:3000/
+            - http://localhost:3000
+          allowed_headers:
+            - "*"
+          max_age: 7200
 
 exporters:
   otlp/2:

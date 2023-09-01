@@ -22,6 +22,7 @@ const sdk = new opentelemetry.NodeSDK({
       // only instrument fs if it is part of another trace
       '@opentelemetry/instrumentation-fs': {
         requireParentSpan: false,
+        enabled: false
       },      
     }),
     new KafkaJsInstrumentation({

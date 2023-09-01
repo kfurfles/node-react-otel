@@ -1,0 +1,55 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "otelcol:9464"
+    resource_to_telemetry_conversion:
+      enabled: true
+    enable_open_metrics: true
+
+  googlecloud:
+    log:
+      default_log_name: login-teste-poc
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 65
+    spike_limit_percentage: 20
+  batch:
+  resourcedetection:
+    detectors: [gcp]
+    timeout: 10s
+  transform:
+    metric_statements:
+    - context: datapoint
+      statements:
+      - set(attributes["exported_service_name"], attributes["service_name"])
+      - delete_key(attributes, "service_name")
+      - set(attributes["exported_service_namespace"], attributes["service_namespace"])
+      - delete_key(attributes, "service_namespace")
+      - set(attributes["exported_service_instance_id"], attributes["service_instance_id"])
+      - delete_key(attributes, "service_instance_id")
+      - set(attributes["exported_instrumentation_source"], attributes["instrumentation_source"])
+      - delete_key(attributes, "instrumentation_source")
+      - set(attributes["exported_instrumentation_version"], attributes["instrumentation_version"])
+      - delete_key(attributes, "instrumentation_version")
+
+service:
+  pipelines:
+    traces:
+      processors: [memory_limiter, batch]
+      exporters: [googlecloud, otlp, logging, spanmetrics]
+    metrics:
+      processors: [memory_limiter, batch]
+      exporters: [googlecloud, transform]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [googlecloud, logging]

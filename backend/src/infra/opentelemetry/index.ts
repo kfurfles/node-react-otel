@@ -17,6 +17,8 @@ import {
 } from '@opentelemetry/resources';
 import { traceExporter } from '../tracing/traceProvider';
 import { KafkaJsInstrumentation } from 'opentelemetry-instrumentation-kafkajs';
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+// diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 export const sdk = new NodeSDK({
   traceExporter,
@@ -25,17 +27,18 @@ export const sdk = new NodeSDK({
       // only instrument fs if it is part of another trace
       '@opentelemetry/instrumentation-fs': {
         requireParentSpan: false,
+        enabled: false,
       },
     }),
-    new KafkaJsInstrumentation({
-      enabled: true,
-      consumerHook(span, topic, message) {
-        console.log({ span, topic, message });
-      },
-      producerHook(span, topic, message) {
-        console.log({ span, topic, message });
-      },
-    }),
+    // new KafkaJsInstrumentation({
+    //   enabled: true,
+    //   consumerHook(span, topic, message) {
+    //     console.log({ span, topic, message });
+    //   },
+    //   producerHook(span, topic, message) {
+    //     console.log({ span, topic, message });
+    //   },
+    // }),
   ],
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
