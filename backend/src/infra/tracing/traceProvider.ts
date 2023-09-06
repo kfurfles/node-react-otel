@@ -9,7 +9,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 
 export const traceExporter = new OTLPTraceExporter({
-  url: 'http://localhost:4318/v1/traces',
+  url: 'http://3.81.184.154:4318/v1/traces',
 });
 export const traceProvider = new NodeTracerProvider({
   resource: new Resource({
@@ -19,6 +19,6 @@ export const traceProvider = new NodeTracerProvider({
 });
 traceProvider.register({});
 traceProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
-traceProvider.addSpanProcessor(
-  new SimpleSpanProcessor(new ConsoleSpanExporter()),
-);
+// traceProvider.addSpanProcessor(
+//   new SimpleSpanProcessor(new ConsoleSpanExporter()),
+// );

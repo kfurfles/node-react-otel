@@ -7,6 +7,7 @@ exporters:
     endpoint: "jaeger:4317"
     tls:
       insecure: true
+
   prometheus:
     endpoint: "otelcol:9464"
     resource_to_telemetry_conversion:
@@ -22,10 +23,13 @@ processors:
     check_interval: 1s
     limit_percentage: 65
     spike_limit_percentage: 20
+
   batch:
+  
   resourcedetection:
     detectors: [gcp]
     timeout: 10s
+  
   transform:
     metric_statements:
     - context: datapoint

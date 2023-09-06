@@ -18,7 +18,7 @@ import {
 import { traceExporter } from '../tracing/traceProvider';
 import { KafkaJsInstrumentation } from 'opentelemetry-instrumentation-kafkajs';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
-// diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 export const sdk = new NodeSDK({
   traceExporter,
