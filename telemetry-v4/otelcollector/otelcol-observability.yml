@@ -23,4 +23,4 @@ service:
     traces:
       exporters: [logging, spanmetrics, otlp/2]
     metrics:
-      exporters: [prometheus, logging]
+      exporters: [prometheus, logging, otlp/2]
