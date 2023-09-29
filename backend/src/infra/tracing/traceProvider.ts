@@ -10,6 +10,7 @@ import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 
 export const traceExporter = new OTLPTraceExporter({
   url: 'http://3.81.184.154:4318/v1/traces',
+  // url: 'http://localhost:4318/v1/traces',
 });
 export const traceProvider = new NodeTracerProvider({
   resource: new Resource({

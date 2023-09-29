@@ -6,7 +6,9 @@ const {
   const { Resource } = require('@opentelemetry/resources');
   const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
   
-  const traceExporter = new OTLPTraceExporter();
+  const traceExporter = new OTLPTraceExporter({
+    url: 'http://3.81.184.154:4318/v1/traces',
+  });
   const traceProvider = new NodeTracerProvider({
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: `express-otel`,

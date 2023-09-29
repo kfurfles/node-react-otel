@@ -40,11 +40,11 @@ export const sdk = new NodeSDK({
     //   },
     // }),
   ],
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({
-      timeoutMillis: 1000,
-    }),
-  }),
+  // metricReader: new PeriodicExportingMetricReader({
+  //   exporter: new OTLPMetricExporter({
+  //     timeoutMillis: 1000,
+  //   }),
+  // }),
   resourceDetectors: [
     containerDetector,
     envDetector,
