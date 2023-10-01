@@ -1,17 +1,29 @@
-import { Either, right, left } from 'fp-ts/lib/Either';
-import * as Yup from 'yup';
+import { Either, right, left, isRight } from 'fp-ts/lib/Either';
 import { Entity } from '@/Core/domain/Entity';
 import { UniqueEntityID } from '@/Core/domain/UniqueEntityID';
+import { UserPassword } from './userPassword';
+import * as Yup from 'yup';
 
-export interface UserProps {
+export interface AuthUserStrategies {
+  id?: string;
   name: string;
-  lastname: string;
-  picture?: string;
+  externalId: string;
 }
 
-const regexPattern =
-  '^(?![0-9]+$)(?![!@#$%^&*(),.?":{}|<>]+$)[\\p{L}\\d\\s]{3,}$';
-const regex = new RegExp(regexPattern, 'u');
+export interface AuthenticationLocal {
+  id?: string;
+  password: UserPassword;
+}
+
+type CredentialStrategy = {
+  strategies: AuthUserStrategies[];
+  localAuth?: AuthenticationLocal;
+};
+
+export type UserProps = {
+  email: string;
+  confirmed: boolean;
+} & CredentialStrategy;
 
 export class User extends Entity<UserProps> {
   private constructor(props: UserProps, publicId?: UniqueEntityID) {
@@ -22,24 +34,53 @@ export class User extends Entity<UserProps> {
     props: UserProps,
     publicId?: UniqueEntityID,
   ): Either<string, User> {
-    const userSchema = Yup.object().shape({
-      name: Yup.string()
-        .min(3, 'O nome deve ter pelo menos 3 caracteres')
-        .matches(regex, 'O nome deve conter apenas letras e números'),
-      lastname: Yup.string()
-        .min(3, 'O sobrenome deve ter pelo menos 3 caracteres')
-        .matches(regex, 'O sobrenome deve conter apenas letras e números'),
-      picture: Yup.string()
-        .url('O campo picture deve ser uma URL válida.')
-        .nullable()
-        .optional(),
-    });
-
     try {
-      userSchema.validateSync(props);
+      const { confirmed, email, strategies = [], localAuth } = props;
+
+      if (!Yup.boolean().isValidSync(confirmed))
+        return left('confirmed status is required');
+
+      if (!Yup.string().email().isValidSync(email))
+        return left('email should be valid');
+
+      if (strategies.length === 0)
+        return left("can't create user with empty strategy");
+
+      if (localAuth) {
+        if (!props.localAuth.password.isAlreadyHashed())
+          return left('the password should be hashed');
+      }
+
       return right(new User(props, publicId));
     } catch (error) {
       return left(error.message);
     }
+  }
+
+  private getPassword() {
+    if ('localAuth' in this.props) {
+      const isAlreadyHashed = this.props?.localAuth.password.isAlreadyHashed();
+      if (!isAlreadyHashed) return left('the password should be hashed');
+      return right(this.props.localAuth);
+    }
+
+    return left('password not found');
+  }
+
+  public getExternalIdByStrategy(strategy: string) {
+    if (this.props.strategies.length < 1) return null;
+
+    const found = this.props.strategies.find(
+      (s) => s.name.toLowerCase() === strategy.toLowerCase(),
+    );
+
+    if (found) return found.externalId;
+
+    return null;
+  }
+
+  public hasLocalAuth() {
+    const local = this.getPassword();
+    return isRight(local);
   }
 }

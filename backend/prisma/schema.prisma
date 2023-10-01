@@ -10,37 +10,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model Team {
-//   id             Int          @id @default(autoincrement())
-//   public_id      String       @default(uuid())
-//   name           String       @db.VarChar(255)
-//   users          TeamsOnUsers[] 
-// }
-
 model User {
-  id             String       @id @default(uuid())
-  name           String       @db.VarChar(255)
-  lastname       String       @db.VarChar(255)
-  picture        String?      @db.VarChar(255)
-  account        Account? 
+  id         String                          @id @default(uuid())
+  email      String                          @unique @db.VarChar(255)
+  confirmed  Boolean                         @default(false) @db.Boolean()
+  auth_Local Authentication_Local?
+  auth_stra  Authentication_User_Strategies?
+  profile    Profile?
 }
 
-model Account {
-  id             String       @id @default(uuid())
-  email          String       @db.VarChar(255) @unique
-  confirmed      Boolean      @db.Boolean() @default(false)
-  user           User         @relation(fields: [userId], references: [id])
-  userId         String       @unique
-  password       String?      @db.VarChar(255)
-  google_id      String?      @db.VarChar(255)
-  facebook_id    String?      @db.VarChar(255)
+model Authentication_User_Strategies {
+  id          String @id @default(uuid())
+  name        String @unique @db.VarChar(255)
+  external_id String @unique @db.VarChar(255)
+  user        User   @relation(fields: [user_Id], references: [id])
+  user_Id     String @unique
 }
 
-// model TeamsOnUsers {
-//   team          Team          @relation(fields: [teamId], references: [id])
-//   teamId        Int
-//   user          User          @relation(fields: [userId], references: [id])
-//   userId        Int
+model Authentication_Local {
+  id       String @id @default(uuid())
+  password String @unique @db.VarChar(255)
+  user     User   @relation(fields: [user_Id], references: [id])
+  user_Id  String @unique
+}
 
-//   @@id([teamId, userId])
-// }
+model Profile {
+  id       String @id @default(uuid())
+  name     String @db.VarChar(255)
+  lastname String @db.VarChar(255)
+  picture  String @db.VarChar(255)
+  user     User   @relation(fields: [user_Id], references: [id])
+  user_Id  String @unique
+}

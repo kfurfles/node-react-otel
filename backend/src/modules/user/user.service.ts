@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { CreateUserDto } from './dto';
+import { CreateUserLocalDto } from './dto';
 import { CreateUserUseCase } from './useCases/createUserUseCase';
 
 @Injectable()
@@ -8,12 +8,11 @@ export class UserService {
     @Optional() private readonly createUserUseCase: CreateUserUseCase,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    const { lastname, name, picture } = createUserDto;
+  create(createUserDto: CreateUserLocalDto) {
+    const { email, credential } = createUserDto;
     return this.createUserUseCase.execute({
-      lastname,
-      name,
-      picture,
+      email,
+      credential,
     });
   }
 }

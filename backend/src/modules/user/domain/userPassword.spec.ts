@@ -1,35 +1,35 @@
 import { right, left, Right } from 'fp-ts/lib/Either';
-import { AccountPassword } from './AccountPassword';
+import { UserPassword } from './userPassword';
 
-describe('AccountPassword', () => {
+describe.only('UserPassword', () => {
   describe('create', () => {
-    it('should create an AccountPassword instance with a valid password', () => {
+    it('should create an userPassword instance with a valid password', () => {
       const validPassword = 'StrongPassword123!@#';
-      const accountPassword = AccountPassword.create({ value: validPassword });
+      const userPassword = UserPassword.create({ value: validPassword });
 
-      expect(accountPassword).toEqual(right(expect.any(AccountPassword)));
+      expect(userPassword).toEqual(right(expect.any(UserPassword)));
     });
 
-    it('should create an AccountPassword and hash itself after call hash method', async () => {
+    it('should create an userPassword and hash itself after call hash method', async () => {
       const validPassword = 'StrongPassword123!@#';
-      const accountPassword = AccountPassword.create({
+      const userPassword = UserPassword.create({
         value: validPassword,
-      }) as Right<AccountPassword>;
+      }) as Right<UserPassword>;
 
-      await accountPassword.right.hashValue();
+      await userPassword.right.hashValue();
 
-      expect(accountPassword.right.value).not.toMatch(validPassword);
-      // expect(accountPassword).toEqual(right(expect.any(AccountPassword)));
+      expect(userPassword.right.value).not.toMatch(validPassword);
+      // expect(userPassword).toEqual(right(expect.any(userPassword)));
     });
 
     it('should return an error message for an invalid password', () => {
       const invalidPassword = 'weak';
-      const accountPassword = AccountPassword.create({
+      const userPassword = UserPassword.create({
         value: invalidPassword,
         hashed: false,
       });
 
-      expect(accountPassword).toEqual(left(expect.any(String)));
+      expect(userPassword).toEqual(left(expect.any(String)));
     });
   });
 
@@ -37,52 +37,48 @@ describe('AccountPassword', () => {
     it('should return true when comparing a hashed password with the same plain-text password', async () => {
       const validPassword = 'StrongPassword123!@#';
       const hashedPassword = await (
-        AccountPassword.create({
+        UserPassword.create({
           value: validPassword,
           hashed: false,
-        }) as Right<AccountPassword>
+        }) as Right<UserPassword>
       ).right.getHashedValue();
 
-      const accountPassword = AccountPassword.create({
+      const userPassword = UserPassword.create({
         value: hashedPassword,
         hashed: true,
-      }) as Right<AccountPassword>;
+      }) as Right<UserPassword>;
 
-      const isMatch = await accountPassword.right.comparePassword(
-        validPassword,
-      );
+      const isMatch = await userPassword.right.comparePassword(validPassword);
 
       expect(isMatch).toBe(true);
-      expect(accountPassword.right.value).toBe(hashedPassword);
+      expect(userPassword.right.value).toBe(hashedPassword);
     });
 
     it('should return false when comparing a hashed password with a different plain-text password', async () => {
       const validPassword = 'StrongPassword123!@#';
       const diffPassword = 'DifferentPassword456!@#';
       const hashedPassword = await (
-        AccountPassword.create({
+        UserPassword.create({
           value: validPassword,
           hashed: true,
-        }) as Right<AccountPassword>
+        }) as Right<UserPassword>
       ).right.getHashedValue();
 
-      const accountPassword = AccountPassword.create({
+      const userPassword = UserPassword.create({
         value: diffPassword,
         hashed: true,
-      }) as Right<AccountPassword>;
+      }) as Right<UserPassword>;
 
-      const isMatch = await accountPassword.right.comparePassword(
-        hashedPassword,
-      );
+      const isMatch = await userPassword.right.comparePassword(hashedPassword);
       expect(isMatch).toBe(false);
     });
 
     it('should return true when comparing an unhashed password with the same plain-text password', async () => {
       const validPassword = 'StrongPassword123!@#';
-      const unhashedPassword = AccountPassword.create({
+      const unhashedPassword = UserPassword.create({
         value: validPassword,
         hashed: false,
-      }) as Right<AccountPassword>;
+      }) as Right<UserPassword>;
 
       const isMatch = await unhashedPassword.right.comparePassword(
         validPassword,
@@ -93,10 +89,10 @@ describe('AccountPassword', () => {
     it('should return false when comparing an unhashed password with a different plain-text password', async () => {
       const validPassword = 'StrongPassword123!@#';
       const diffPassword = 'DifferentPassword456!@#';
-      const unhashedPassword = AccountPassword.create({
+      const unhashedPassword = UserPassword.create({
         value: validPassword,
         hashed: true,
-      }) as Right<AccountPassword>;
+      }) as Right<UserPassword>;
 
       const isMatch = await unhashedPassword.right.comparePassword(
         diffPassword,

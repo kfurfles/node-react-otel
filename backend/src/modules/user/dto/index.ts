@@ -1,14 +1,11 @@
-import { IUser } from '../interface';
-
-export class CreateUserDto implements Omit<IUser, 'id'> {
-  name: string;
-  lastname: string;
-  picture: string;
+import { IUser, ICredentials } from '../interface';
+export class CreateUserLocalDto implements Omit<IUser, 'id' | 'confirmed'> {
+  email: string;
+  credential: ICredentials;
 }
 
 export class CreatedUserDto implements IUser {
+  confirmed: boolean;
+  email: string;
   id: string;
-  name: string;
-  lastname: string;
-  picture: string;
 }
